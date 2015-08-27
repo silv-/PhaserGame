@@ -18,8 +18,8 @@ module SoccerGame {
 		create() {
 
 			this.background = this.add.sprite(0, 0, 'background');
-			this.player1 = new Player(this.game, 500, 300, 1);
-            this.player2 = new Player(this.game, 300, 300, 2);
+			this.player1 = new Player(this.game, 500, 300, 1,Phaser.Keyboard.UP,Phaser.Keyboard.DOWN,Phaser.Keyboard.LEFT,Phaser.Keyboard.RIGHT,Phaser.Keyboard.P);
+            this.player2 = new Player(this.game, 300, 300, 2,Phaser.Keyboard.W,Phaser.Keyboard.S,Phaser.Keyboard.A,Phaser.Keyboard.D,Phaser.Keyboard.Q);
 			this.ball = new Ball(this.game);
 
 
