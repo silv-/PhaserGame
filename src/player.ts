@@ -49,11 +49,36 @@ module SoccerGame {
 					this.body.velocity.x = -150;
 
 					this.animations.play('walk');
+					// move diagonal left down
+					if (this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
+						this.body.velocity.y = 150;
+
+					}
+					// move diagonal left up
+					else if (this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+						this.body.velocity.y = -150;
+
+					}
+
+
+
+
 				}
 				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
 					//  Move to the right
 					this.body.velocity.x = 150;
 					this.animations.play('walk');
+					//move diagonal right down
+					if (this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
+						this.body.velocity.y = 150;
+
+					}
+					// move diagonal right up
+					else if (this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+						this.body.velocity.y = -150;
+
+					}
+
 
 				}
 				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
@@ -79,11 +104,31 @@ module SoccerGame {
 					this.body.velocity.x = -150;
 
 					this.animations.play('walk');
+					//move diagonal left down
+					if (this.game.input.keyboard.isDown(Phaser.Keyboard.S)) {
+						this.body.velocity.y = 150;
+
+					}
+					// move diagonal left up
+					else if (this.game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+						this.body.velocity.y = -150;
+
+					}
 				}
 				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.D)) {
 					//  Move to the right
 					this.body.velocity.x = 150;
 					this.animations.play('walk');
+					// move diagonal right down
+					if (this.game.input.keyboard.isDown(Phaser.Keyboard.S)) {
+						this.body.velocity.y = 150;
+
+					}
+					// move diagonal right up
+					else if (this.game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+						this.body.velocity.y = -150;
+
+					}
 
 				}
 				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.S)) {
