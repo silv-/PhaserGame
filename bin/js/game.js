@@ -40,11 +40,25 @@ var SoccerGame;
                     //  Move to the left
                     this.body.velocity.x = -150;
                     this.animations.play('walk');
+                    // move diagonal left down
+                    if (this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
+                        this.body.velocity.y = 150;
+                    }
+                    else if (this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+                        this.body.velocity.y = -150;
+                    }
                 }
                 else if (this.game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
                     //  Move to the right
                     this.body.velocity.x = 150;
                     this.animations.play('walk');
+                    //move diagonal right down
+                    if (this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
+                        this.body.velocity.y = 150;
+                    }
+                    else if (this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
+                        this.body.velocity.y = -150;
+                    }
                 }
                 else if (this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
                     this.body.velocity.y = 150;
@@ -63,11 +77,25 @@ var SoccerGame;
                     //  Move to the left
                     this.body.velocity.x = -150;
                     this.animations.play('walk');
+                    //move diagonal left down
+                    if (this.game.input.keyboard.isDown(Phaser.Keyboard.S)) {
+                        this.body.velocity.y = 150;
+                    }
+                    else if (this.game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+                        this.body.velocity.y = -150;
+                    }
                 }
                 else if (this.game.input.keyboard.isDown(Phaser.Keyboard.D)) {
                     //  Move to the right
                     this.body.velocity.x = 150;
                     this.animations.play('walk');
+                    // move diagonal right down
+                    if (this.game.input.keyboard.isDown(Phaser.Keyboard.S)) {
+                        this.body.velocity.y = 150;
+                    }
+                    else if (this.game.input.keyboard.isDown(Phaser.Keyboard.W)) {
+                        this.body.velocity.y = -150;
+                    }
                 }
                 else if (this.game.input.keyboard.isDown(Phaser.Keyboard.S)) {
                     this.body.velocity.y = 150;
@@ -103,6 +131,8 @@ var SoccerGame;
             this.game.load.spritesheet('players', "assets/Chars.png", 16, 16, 64, 0, 0);
             this.game.load.image('titlepage', "assets/titlepage.png");
             this.game.load.image('clickToPlay', "assets/clickToPlay.png");
+            this.game.load.image('ball', "assets/ball.png");
+            this.game.load.image('goal', "assets/goal.png");
         };
         Preloader.prototype.create = function () {
             var tween = this.add.tween(this.preloadBar).to({ alpha: 0 }, 1000, Phaser.Easing.Linear.None, true);
@@ -144,9 +174,35 @@ var SoccerGame;
     })(Phaser.State);
     SoccerGame.MainMenu = MainMenu;
 })(SoccerGame || (SoccerGame = {}));
-/// <reference path="player.ts"/>
+/// <reference path="../tsDefinitions/phaser.d.ts" />
 var SoccerGame;
 (function (SoccerGame) {
+    var Goal = (function (_super) {
+        __extends(Goal, _super);
+        function Goal(game, x, y) {
+            // create our phaser game
+            // 800 - width
+            // 600 - height
+            // Phaser.AUTO - determine the renderer automatically (canvas, webgl)
+            // 'content' - the name of the container to add our game to
+            // { preload:this.preload, create:this.create} - functions to call for our states
+            _super.call(this, game, x, y, 'goal', 0);
+            this.anchor.setTo(0.5, 0.5);
+            //this.scale.setTo(2, 2);
+            game.physics.enable(this, Phaser.Physics.ARCADE);
+            game.add.existing(this);
+        }
+        Goal.prototype.update = function () {
+        };
+        return Goal;
+    })(Phaser.Sprite);
+    SoccerGame.Goal = Goal;
+})(SoccerGame || (SoccerGame = {}));
+/// <reference path="player.ts"/>
+/// <reference path="goal.ts"/>
+var SoccerGame;
+(function (SoccerGame) {
+    var scores = new Array(2);
     var Match = (function (_super) {
         __extends(Match, _super);
         function Match() {
@@ -156,6 +212,33 @@ var SoccerGame;
             this.background = this.add.sprite(0, 0, 'background');
             this.player1 = new SoccerGame.Player(this.game, 500, 300, 1);
             this.player2 = new SoccerGame.Player(this.game, 300, 300, 2);
+            this.ball = new SoccerGame.Ball(this.game);
+            this.goal1 = new SoccerGame.Goal(this.game, this.game.world.width - 10, this.world.centerY);
+            this.goal2 = new SoccerGame.Goal(this.game, 10, this.world.centerY);
+            scores[0] = 0;
+            scores[1] = 0;
+            this.scoreText = this.game.add.text(16, 16, '', { fontSize: '20px', fill: '#000' });
+        };
+        Match.prototype.update = function () {
+            this.game.physics.arcade.collide(this.player1, this.ball);
+            this.game.physics.arcade.collide(this.player2, this.ball);
+            this.game.physics.arcade.collide(this.player1, this.player2);
+            this.game.physics.arcade.overlap(this.ball, this.goal1, this.score2);
+            this.game.physics.arcade.overlap(this.ball, this.goal2, this.score1);
+            if (this.ball.visible == false) {
+                this.ball = new SoccerGame.Ball(this.game);
+            }
+            this.scoreText.text = scores[0] + " : " + scores[1];
+        };
+        // Team 1 scored
+        Match.prototype.score1 = function (ball, goal) {
+            ball.kill();
+            scores[1] += 1;
+        };
+        // Team 2 scored
+        Match.prototype.score2 = function (ball, goal) {
+            ball.kill();
+            scores[0] += 1;
         };
         return Match;
     })(Phaser.State);
@@ -218,3 +301,30 @@ var SoccerGame;
 window.onload = function () {
     var game = new SoccerGame.Game();
 };
+/// <reference path="../tsDefinitions/phaser.d.ts" />
+var SoccerGame;
+(function (SoccerGame) {
+    var Ball = (function (_super) {
+        __extends(Ball, _super);
+        function Ball(game) {
+            // create our phaser game
+            // 800 - width
+            // 600 - height
+            // Phaser.AUTO - determine the renderer automatically (canvas, webgl)
+            // 'content' - the name of the container to add our game to
+            // { preload:this.preload, create:this.create} - functions to call for our states
+            _super.call(this, game, game.world.centerX, game.world.centerY, 'ball', 0);
+            this.anchor.setTo(0.5, 0);
+            //this.scale.setTo(2, 2);
+            game.physics.enable(this, Phaser.Physics.ARCADE);
+            game.add.existing(this);
+            this.body.collideWorldBounds = true;
+            this.body.bounce.x = 1.1;
+            this.body.bounce.y = 1.1;
+        }
+        Ball.prototype.update = function () {
+        };
+        return Ball;
+    })(Phaser.Sprite);
+    SoccerGame.Ball = Ball;
+})(SoccerGame || (SoccerGame = {}));

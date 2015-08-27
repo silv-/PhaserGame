@@ -19,6 +19,8 @@ module SoccerGame {
 			this.game.load.spritesheet('players', "assets/Chars.png", 16, 16, 64, 0, 0);
 			this.game.load.image('titlepage',"assets/titlepage.png");
 			this.game.load.image('clickToPlay', "assets/clickToPlay.png");
+			this.game.load.image('ball', "assets/ball.png");
+			this.game.load.image('goal',"assets/goal.png");
 		}
 
 		create() {
