@@ -4,8 +4,19 @@ module SoccerGame {
 	export class Player extends Phaser.Sprite {
 
 		team: number;
+		stamina: number;
+		speed: number;
+		keyCodeUp: number;
+		keyCodeDown: number;
+		keyCodeLeft: number;
+		keyCodeRight: number;
+		keyCodeSprint: number;
+		staminaReduceFactor: number;
+		staminaRecoverFactor: number;
+		staminaText:Phaser.Text;
 
-		constructor(game: Phaser.Game, x: number, y: number, teamNumber: number) {
+
+		constructor(game: Phaser.Game, x: number, y: number, teamNumber: number, keyCodeUp: number, keyCodeDown: number, keyCodeLeft: number, keyCodeRight: number, keyCodeSprint: number) {
 			// create our phaser game
 			// 800 - width
 			// 600 - height
@@ -13,9 +24,18 @@ module SoccerGame {
 			// 'content' - the name of the container to add our game to
 			// { preload:this.preload, create:this.create} - functions to call for our states
 			
+			this.stamina = 100;
+			this.speed = 150;
+			this.keyCodeUp = keyCodeUp;
+			this.keyCodeDown = keyCodeDown;
+			this.keyCodeLeft = keyCodeLeft;
+			this.keyCodeRight = keyCodeRight;
+			this.keyCodeSprint = keyCodeSprint;
+			this.staminaReduceFactor = 1.0;
+			this.staminaRecoverFactor = 0.5;
+
 			
 
-		
 
 			if (teamNumber == 1) {
 				super(game, x, y, 'players', 0);
@@ -34,122 +54,74 @@ module SoccerGame {
 			game.physics.enable(this, Phaser.Physics.ARCADE);
 			game.add.existing(this);
 			this.body.collideWorldBounds = true;
-
+			this.staminaText = game.add.text(x - this.width/2 , y + this.height, ""+ this.stamina, { fontSize: '18px', fill: '#000' });
 		}
 
 		update() {
 			this.body.velocity.x = 0;
 			this.body.velocity.y = 0;
-			if (this.team == 1) {
-
-
-
-				if (this.game.input.keyboard.isDown(Phaser.Keyboard.LEFT)) {
-					//  Move to the left
-					this.body.velocity.x = -150;
-
-					this.animations.play('walk');
-					// move diagonal left down
-					if (this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
-						this.body.velocity.y = 150;
-
-					}
-					// move diagonal left up
-					else if (this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
-						this.body.velocity.y = -150;
-
-					}
-
-
-
-
-				}
-				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
-					//  Move to the right
-					this.body.velocity.x = 150;
-					this.animations.play('walk');
-					//move diagonal right down
-					if (this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
-						this.body.velocity.y = 150;
-
-					}
-					// move diagonal right up
-					else if (this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
-						this.body.velocity.y = -150;
-
-					}
-
-
-				}
-				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.DOWN)) {
-					this.body.velocity.y = 150;
-					this.animations.play('walk');
-				}
-
-
-				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.UP)) {
-					this.body.velocity.y = -150;
-					this.animations.play('walk');
-				}
-				else {
-					this.animations.stop();
-
+			this.staminaText.text = ""+ Phaser.Math.roundAwayFromZero(this.stamina);
+			this.staminaText.position.x = this.x - this.width/2;
+			this.staminaText.position.y = this.y + this.height;
+			if (this.game.input.keyboard.isDown(this.keyCodeSprint) && this.stamina > 0) {
+				this.speed = 300;
+				this.stamina = this.stamina - this.staminaReduceFactor;
+				if(this.stamina < 0)
+				{
+					this.stamina = 0;
 				}
 			}
-
 			else {
-
-				if (this.game.input.keyboard.isDown(Phaser.Keyboard.A)) {
-					//  Move to the left
-					this.body.velocity.x = -150;
-
-					this.animations.play('walk');
-					//move diagonal left down
-					if (this.game.input.keyboard.isDown(Phaser.Keyboard.S)) {
-						this.body.velocity.y = 150;
-
-					}
-					// move diagonal left up
-					else if (this.game.input.keyboard.isDown(Phaser.Keyboard.W)) {
-						this.body.velocity.y = -150;
-
-					}
+				this.speed = 150;
+				if(this.stamina < 100){
+				this.stamina = this.stamina + this.staminaRecoverFactor;
 				}
-				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.D)) {
-					//  Move to the right
-					this.body.velocity.x = 150;
-					this.animations.play('walk');
-					// move diagonal right down
-					if (this.game.input.keyboard.isDown(Phaser.Keyboard.S)) {
-						this.body.velocity.y = 150;
-
-					}
-					// move diagonal right up
-					else if (this.game.input.keyboard.isDown(Phaser.Keyboard.W)) {
-						this.body.velocity.y = -150;
-
-					}
-
+			}
+			console.log(this.stamina);
+			if (this.game.input.keyboard.isDown(this.keyCodeLeft)) {
+				//  Move to the left
+				this.body.velocity.x = -this.speed;
+				this.animations.play('walk');
+				// move diagonal left down
+				if (this.game.input.keyboard.isDown(this.keyCodeDown)) {
+					this.body.velocity.y = this.speed;
 				}
-				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.S)) {
-					this.body.velocity.y = 150;
-					this.animations.play('walk');
+				// move diagonal left up
+				else if (this.game.input.keyboard.isDown(this.keyCodeUp)) {
+					this.body.velocity.y = -this.speed;
 				}
-
-
-				else if (this.game.input.keyboard.isDown(Phaser.Keyboard.W)) {
-					this.body.velocity.y = -150;
-					this.animations.play('walk');
+			}
+			else if (this.game.input.keyboard.isDown(this.keyCodeRight)) {
+				//  Move to the right
+				this.body.velocity.x = this.speed;
+				this.animations.play('walk');
+				//move diagonal right down
+				if (this.game.input.keyboard.isDown(this.keyCodeDown)) {
+					this.body.velocity.y = this.speed;
 				}
-				else {
-					this.animations.stop();
-
+				// move diagonal right up
+				else if (this.game.input.keyboard.isDown(this.keyCodeUp)) {
+					this.body.velocity.y = -this.speed;
 				}
-
-
+			}
+			else if (this.game.input.keyboard.isDown(this.keyCodeDown)) {
+				this.body.velocity.y = this.speed;
+				this.animations.play('walk');
 			}
 
+
+			else if (this.game.input.keyboard.isDown(this.keyCodeUp)) {
+				this.body.velocity.y = -this.speed;
+				this.animations.play('walk');
+			}
+			else {
+				this.animations.stop();
+
+			}
 		}
+
+
+
 
 
 	}
