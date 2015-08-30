@@ -13,7 +13,7 @@ module SoccerGame {
 		keyCodeSprint: number;
 		staminaReduceFactor: number;
 		staminaRecoverFactor: number;
-		staminaText:Phaser.Text;
+		staminaText: Phaser.Text;
 
 
 		constructor(game: Phaser.Game, x: number, y: number, teamNumber: number, keyCodeUp: number, keyCodeDown: number, keyCodeLeft: number, keyCodeRight: number, keyCodeSprint: number) {
@@ -34,7 +34,7 @@ module SoccerGame {
 			this.staminaReduceFactor = 1.0;
 			this.staminaRecoverFactor = 0.5;
 
-			
+
 
 
 			if (teamNumber == 1) {
@@ -54,30 +54,28 @@ module SoccerGame {
 			game.physics.enable(this, Phaser.Physics.ARCADE);
 			game.add.existing(this);
 			this.body.collideWorldBounds = true;
-			this.staminaText = game.add.text(x - this.width/2 , y + this.height, ""+ this.stamina, { fontSize: '18px', fill: '#000' });
+			this.staminaText = game.add.text(x - this.width / 2, y + this.height, "" + this.stamina, { fontSize: '18px', fill: '#000' });
 		}
 
 		update() {
 			this.body.velocity.x = 0;
 			this.body.velocity.y = 0;
-			this.staminaText.text = ""+ Phaser.Math.roundAwayFromZero(this.stamina);
-			this.staminaText.position.x = this.x - this.width/2;
+			this.staminaText.text = "" + Phaser.Math.roundAwayFromZero(this.stamina);
+			this.staminaText.position.x = this.x - this.width / 2;
 			this.staminaText.position.y = this.y + this.height;
 			if (this.game.input.keyboard.isDown(this.keyCodeSprint) && this.stamina > 0) {
 				this.speed = 300;
 				this.stamina = this.stamina - this.staminaReduceFactor;
-				if(this.stamina < 0)
-				{
+				if (this.stamina < 0) {
 					this.stamina = 0;
 				}
 			}
 			else {
 				this.speed = 150;
-				if(this.stamina < 100){
-				this.stamina = this.stamina + this.staminaRecoverFactor;
+				if (this.stamina < 100) {
+					this.stamina = this.stamina + this.staminaRecoverFactor;
 				}
 			}
-			console.log(this.stamina);
 			if (this.game.input.keyboard.isDown(this.keyCodeLeft)) {
 				//  Move to the left
 				this.body.velocity.x = -this.speed;

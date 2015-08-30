@@ -1,5 +1,6 @@
 /// <reference path="player.ts"/>
 /// <reference path="goal.ts"/>
+/// <reference path="ai.ts"/>
 
 module SoccerGame {
 
@@ -18,8 +19,9 @@ module SoccerGame {
 		create() {
 
 			this.background = this.add.sprite(0, 0, 'background');
-			this.player1 = new Player(this.game, 500, 300, 1,Phaser.Keyboard.UP,Phaser.Keyboard.DOWN,Phaser.Keyboard.LEFT,Phaser.Keyboard.RIGHT,Phaser.Keyboard.P);
-            this.player2 = new Player(this.game, 300, 300, 2,Phaser.Keyboard.W,Phaser.Keyboard.S,Phaser.Keyboard.A,Phaser.Keyboard.D,Phaser.Keyboard.Q);
+			this.player1 = new Player(this.game, 500, 300, 1, Phaser.Keyboard.UP, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.P);
+            //this.player2 = new Player(this.game, 300, 300, 2,Phaser.Keyboard.W,Phaser.Keyboard.S,Phaser.Keyboard.A,Phaser.Keyboard.D,Phaser.Keyboard.Q);
+
 			this.ball = new Ball(this.game);
 
 
@@ -28,7 +30,7 @@ module SoccerGame {
 			scores[0] = 0;
 			scores[1] = 0;
 			this.scoreText = this.game.add.text(16, 16, '', { fontSize: '20px', fill: '#000' });
-
+			this.player2 = new Ai(this.game, 300, 300, 2, 0, this.ball, this.goal1, this.goal2);
 		}
 
 		update() {
@@ -39,7 +41,11 @@ module SoccerGame {
 			this.game.physics.arcade.overlap(this.ball, this.goal2, this.score1);
 
 			if (this.ball.visible == false) {
+				this.game.world.remove(this.game);
+				this.ball.destroy();
+				this.ball = null;
 				this.ball = new Ball(this.game);
+				this.player2.setBall(this.ball);
 			}
 			this.scoreText.text = scores[0] + " : " + scores[1];
 
@@ -48,16 +54,17 @@ module SoccerGame {
 
 		// Team 1 scored
 		score1(ball, goal) {
-			ball.kill();
+			ball.destroy();
 			scores[1] += 1;
 
 		}
 		// Team 2 scored
 		score2(ball, goal) {
-			ball.kill();
+			ball.destroy();
 			scores[0] += 1;
 
 		}
+
 
 	}
 

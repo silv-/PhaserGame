@@ -7,6 +7,125 @@ var __extends = (this && this.__extends) || function (d, b) {
 /// <reference path="../tsDefinitions/phaser.d.ts" />
 var SoccerGame;
 (function (SoccerGame) {
+    var Ball = (function (_super) {
+        __extends(Ball, _super);
+        function Ball(game) {
+            // create our phaser game
+            // 800 - width
+            // 600 - height
+            // Phaser.AUTO - determine the renderer automatically (canvas, webgl)
+            // 'content' - the name of the container to add our game to
+            // { preload:this.preload, create:this.create} - functions to call for our states
+            _super.call(this, game, game.world.centerX, game.world.centerY, 'ball', 0);
+            this.anchor.setTo(0.5, 0);
+            //this.scale.setTo(2, 2);
+            game.physics.enable(this, Phaser.Physics.ARCADE);
+            game.add.existing(this);
+            this.body.collideWorldBounds = true;
+            this.body.bounce.x = 1.1;
+            this.body.bounce.y = 1.1;
+        }
+        Ball.prototype.update = function () {
+        };
+        return Ball;
+    })(Phaser.Sprite);
+    SoccerGame.Ball = Ball;
+})(SoccerGame || (SoccerGame = {}));
+/// <reference path="../tsDefinitions/phaser.d.ts" />
+/// <reference path="ball.ts" />
+var SoccerGame;
+(function (SoccerGame) {
+    var Ai = (function (_super) {
+        __extends(Ai, _super);
+        function Ai(game, x, y, teamNumber, difficulty, ball, goal1, goal2) {
+            // create our phaser game
+            // 800 - width
+            // 600 - height
+            // Phaser.AUTO - determine the renderer automatically (canvas, webgl)
+            // 'content' - the name of the container to add our game to
+            // { preload:this.preload, create:this.create} - functions to call for our states
+            this.stamina = 100;
+            this.speed = 150;
+            this.ball = ball;
+            this.goal1 = goal1;
+            this.goal2 = goal2;
+            this.difficulty = difficulty;
+            if (teamNumber == 1) {
+                _super.call(this, game, x, y, 'players', 0);
+                this.animations.add('walk', [0, 1, 2, 3], 10, true);
+                this.team = 1;
+            }
+            else {
+                _super.call(this, game, x, y, 'players', 36);
+                this.animations.add('walk', [36, 37, 38, 39], 10, true);
+                this.team = 2;
+            }
+            // easy bot
+            if (this.difficulty == 0) {
+                this.sprintDistanceFactor = 200;
+                this.staminaReduceFactor = 2.0;
+                this.staminaRecoverFactor = 1.0;
+            }
+            this.anchor.setTo(0.5, 0);
+            this.scale.setTo(2, 2);
+            game.physics.enable(this, Phaser.Physics.ARCADE);
+            game.add.existing(this);
+            this.body.collideWorldBounds = true;
+            this.staminaText = game.add.text(x - this.width / 2, y + this.height, "" + this.stamina, { fontSize: '18px', fill: '#000' });
+        }
+        Ai.prototype.setBall = function (ball) {
+            this.ball = ball;
+        };
+        Ai.prototype.update = function () {
+            this.body.velocity.x = 0;
+            this.body.velocity.y = 0;
+            this.staminaText.text = "" + Phaser.Math.roundAwayFromZero(this.stamina);
+            this.staminaText.position.x = this.x - this.width / 2;
+            this.staminaText.position.y = this.y + this.height;
+            // if difficulty is easy
+            //console.log("ball Position: " + this.ball.x + " : " + this.ball.y);
+            //console.log("AI Position : " + this.x + " : " +this.y);
+            if (this.difficulty == 0) {
+                if (((Phaser.Math.distance(this.goal1.x, this.goal1.y, this.ball.x, this.ball.y) < 200 || Phaser.Math.distance(this.goal2.x, this.goal2.y, this.ball.x, this.ball.y) < 200)) && this.stamina > 0) {
+                    this.speed = 300;
+                    this.stamina = this.stamina - this.staminaReduceFactor;
+                    if (this.stamina < 0) {
+                        this.stamina = 0;
+                    }
+                }
+                else {
+                    this.speed = 150;
+                    if (this.stamina < 100) {
+                        this.stamina = this.stamina + this.staminaRecoverFactor;
+                    }
+                }
+                if (this.x < this.ball.x) {
+                    this.body.velocity.x = this.speed;
+                    if (this.y < this.ball.y) {
+                        this.body.velocity.y = this.speed;
+                    }
+                    else {
+                        this.body.velocity.y = -this.speed;
+                    }
+                }
+                else {
+                    this.body.velocity.x = -this.speed;
+                    if (this.y < this.ball.y) {
+                        this.body.velocity.y = this.speed;
+                    }
+                    else {
+                        this.body.velocity.y = -this.speed;
+                    }
+                }
+            }
+        };
+        return Ai;
+    })(Phaser.Sprite);
+    SoccerGame.Ai = Ai;
+})(SoccerGame || (SoccerGame = {}));
+/// <reference path="../tsDefinitions/phaser.d.ts" />
+var SoccerGame;
+(function (SoccerGame) {
     var Player = (function (_super) {
         __extends(Player, _super);
         function Player(game, x, y, teamNumber, keyCodeUp, keyCodeDown, keyCodeLeft, keyCodeRight, keyCodeSprint) {
@@ -61,7 +180,6 @@ var SoccerGame;
                     this.stamina = this.stamina + this.staminaRecoverFactor;
                 }
             }
-            console.log(this.stamina);
             if (this.game.input.keyboard.isDown(this.keyCodeLeft)) {
                 //  Move to the left
                 this.body.velocity.x = -this.speed;
@@ -188,6 +306,7 @@ var SoccerGame;
 })(SoccerGame || (SoccerGame = {}));
 /// <reference path="player.ts"/>
 /// <reference path="goal.ts"/>
+/// <reference path="ai.ts"/>
 var SoccerGame;
 (function (SoccerGame) {
     var scores = new Array(2);
@@ -199,13 +318,14 @@ var SoccerGame;
         Match.prototype.create = function () {
             this.background = this.add.sprite(0, 0, 'background');
             this.player1 = new SoccerGame.Player(this.game, 500, 300, 1, Phaser.Keyboard.UP, Phaser.Keyboard.DOWN, Phaser.Keyboard.LEFT, Phaser.Keyboard.RIGHT, Phaser.Keyboard.P);
-            this.player2 = new SoccerGame.Player(this.game, 300, 300, 2, Phaser.Keyboard.W, Phaser.Keyboard.S, Phaser.Keyboard.A, Phaser.Keyboard.D, Phaser.Keyboard.Q);
+            //this.player2 = new Player(this.game, 300, 300, 2,Phaser.Keyboard.W,Phaser.Keyboard.S,Phaser.Keyboard.A,Phaser.Keyboard.D,Phaser.Keyboard.Q);
             this.ball = new SoccerGame.Ball(this.game);
             this.goal1 = new SoccerGame.Goal(this.game, this.game.world.width - 10, this.world.centerY);
             this.goal2 = new SoccerGame.Goal(this.game, 10, this.world.centerY);
             scores[0] = 0;
             scores[1] = 0;
             this.scoreText = this.game.add.text(16, 16, '', { fontSize: '20px', fill: '#000' });
+            this.player2 = new SoccerGame.Ai(this.game, 300, 300, 2, 0, this.ball, this.goal1, this.goal2);
         };
         Match.prototype.update = function () {
             this.game.physics.arcade.collide(this.player1, this.ball);
@@ -214,18 +334,22 @@ var SoccerGame;
             this.game.physics.arcade.overlap(this.ball, this.goal1, this.score2);
             this.game.physics.arcade.overlap(this.ball, this.goal2, this.score1);
             if (this.ball.visible == false) {
+                this.game.world.remove(this.game);
+                this.ball.destroy();
+                this.ball = null;
                 this.ball = new SoccerGame.Ball(this.game);
+                this.player2.setBall(this.ball);
             }
             this.scoreText.text = scores[0] + " : " + scores[1];
         };
         // Team 1 scored
         Match.prototype.score1 = function (ball, goal) {
-            ball.kill();
+            ball.destroy();
             scores[1] += 1;
         };
         // Team 2 scored
         Match.prototype.score2 = function (ball, goal) {
-            ball.kill();
+            ball.destroy();
             scores[0] += 1;
         };
         return Match;
@@ -289,30 +413,3 @@ var SoccerGame;
 window.onload = function () {
     var game = new SoccerGame.Game();
 };
-/// <reference path="../tsDefinitions/phaser.d.ts" />
-var SoccerGame;
-(function (SoccerGame) {
-    var Ball = (function (_super) {
-        __extends(Ball, _super);
-        function Ball(game) {
-            // create our phaser game
-            // 800 - width
-            // 600 - height
-            // Phaser.AUTO - determine the renderer automatically (canvas, webgl)
-            // 'content' - the name of the container to add our game to
-            // { preload:this.preload, create:this.create} - functions to call for our states
-            _super.call(this, game, game.world.centerX, game.world.centerY, 'ball', 0);
-            this.anchor.setTo(0.5, 0);
-            //this.scale.setTo(2, 2);
-            game.physics.enable(this, Phaser.Physics.ARCADE);
-            game.add.existing(this);
-            this.body.collideWorldBounds = true;
-            this.body.bounce.x = 1.1;
-            this.body.bounce.y = 1.1;
-        }
-        Ball.prototype.update = function () {
-        };
-        return Ball;
-    })(Phaser.Sprite);
-    SoccerGame.Ball = Ball;
-})(SoccerGame || (SoccerGame = {}));
